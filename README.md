@@ -6,6 +6,30 @@ A recipe helper that lives inside SULFUR's church. Buy the **Crafting Arcade**
 from Arthur for **10 stamps**, then use the arcade cabinet beyond the left front
 pew to see what you can make from your backpack and accessible church chests.
 
+## Screenshots
+
+The arcade cabinet inside the church, beyond the left front pew:
+
+![Crafting Arcade cabinet inside the church](docs/images/arcade-cabinet.png)
+
+The browser starts with craftable items grouped into expandable rows:
+
+![Craftable recipe browser with search, filters, sorting and scrollbar](docs/images/recipe-browser.png)
+
+Expand an item to compare recipe variants, output quantities and **owned / required** ingredients:
+
+![Expanded Berry Milkshake recipes with ingredient icons and quantities](docs/images/recipe-ingredients.png)
+
+<details>
+<summary>View the item and effect filters</summary>
+
+![Recipe filter menu for healing, other effects and item categories](docs/images/recipe-filters.png)
+
+</details>
+
+Screenshots were captured in-game with the reveal-all recipe setting enabled for testing.
+Fresh installs show learned recipes by default. SULFUR artwork belongs to its respective owners.
+
 ## Features
 
 - Combines backpack and church storage ingredient quantities without counting the same chest twice.

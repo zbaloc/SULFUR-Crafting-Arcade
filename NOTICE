@@ -5,8 +5,11 @@ The original mod source, documentation, build/test scripts, and original package
 icon are licensed under GNU GPL version 3 only. See LICENSE and LINKING-EXCEPTION.
 
 SULFUR, Unity, and game assets belong to their respective owners. Game materials,
-fonts, icons and recipes are accessed from the installed game at runtime; they
-are not included in this repository or distributed mod packages.
+fonts, icons and recipes are accessed from the installed game at runtime; their
+source assets are not included in this repository or distributed mod packages.
+The in-game screenshots in docs/images show the mod running in SULFUR and include
+game artwork belonging to its respective owners. The mod's GPL license does not
+relicense the game's artwork.
 
 BepInEx and Harmony are external dependencies with their own licenses. Their
 binaries are not included in this repository or distributed mod packages.
