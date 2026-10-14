@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<rect width="256" height="256" rx="22" fill="#22271d"/>
+<rect x="8" y="8" width="240" height="240" rx="17" fill="none" stroke="#edc76b" stroke-width="3"/>
+<path d="M63 29H185V77L169 124L192 144V212H58V144L80 124L63 77Z" fill="#cfc49a" stroke="#12170f" stroke-width="7" stroke-linejoin="round"/>
+<path d="M76 36H172V63H76Z" fill="#272e20"/>
+<text x="124" y="55" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="14" fill="#f5e9c4">RECIPE ORACLE</text>
+<path d="M80 76H168L154 124H94Z" fill="#151d13"/>
+<path d="M90 82H158L148 116H100Z" fill="#426649"/>
+<path d="M109 102C109 90 120 89 126 94C131 85 145 91 143 104L140 109H110Z" fill="#efe4bd"/>
+<path d="M121 93L117 99M133 94L129 100" fill="none" stroke="#9d905f" stroke-width="2"/>
+<path d="M77 132H172L183 146H67Z" fill="#959a68"/>
+<circle cx="102" cy="139" r="5" fill="#20281a"/><path d="M102 135V123" stroke="#21271a" stroke-width="4"/><circle cx="102" cy="120" r="6" fill="#b64d30"/>
+<ellipse cx="149" cy="137" rx="7" ry="4" fill="#bb5030"/>
+<path d="M67 152H184V203H67Z" fill="#626b44"/>
+<path d="M83 165H114M83 172H114M83 179H114" stroke="#27311f" stroke-width="3"/>
+<rect x="149" y="164" width="17" height="22" rx="2" fill="#252c1d"/><path d="M151 171H164" stroke="#ded2a2" stroke-width="2"/>
+<text x="128" y="232" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="16" letter-spacing="1" fill="#f5e9c4">CRAFTING ARCADE</text>
+</svg>

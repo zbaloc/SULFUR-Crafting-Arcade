@@ -1,0 +1,7 @@
+{
+  "name": "Crafting_Arcade",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/zbaloc/SULFUR-Crafting-Arcade",
+  "description": "Buy a church recipe arcade for 10 stamps. Browse what you can craft from your backpack and church chests, with recipe groups, ingredient quantities, filters and sorting.",
+  "dependencies": ["BepInEx-BepInExPack-5.4.2305"]
+}

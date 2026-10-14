@@ -1,0 +1,13 @@
+Additional permission under section 7 of GNU GPL version 3
+
+Copyright (c) 2026 zbaloc
+
+You may link this mod with the unmodified SULFUR game runtime and the Unity
+runtime libraries that SULFUR uses, and distribute the resulting mod executable
+without requiring those game/runtime libraries to be licensed under the GPL.
+
+This permission does not allow redistribution of game/runtime libraries, game
+assets, or decompiled game source. Obtain those separately from their owners.
+The mod's original and modified source remains covered by GNU GPL version 3.
+The GPL's requirements to provide corresponding source for distributed mod
+executables continue to apply.

@@ -1,0 +1,17 @@
+SULFUR Crafting Arcade
+Copyright (c) 2026 zbaloc
+
+The original mod source, documentation, build/test scripts, and original package
+icon are licensed under GNU GPL version 3 only. See LICENSE and LINKING-EXCEPTION.
+
+SULFUR, Unity, and game assets belong to their respective owners. Game materials,
+fonts, icons and recipes are accessed from the installed game at runtime; they
+are not included in this repository or distributed mod packages.
+
+BepInEx and Harmony are external dependencies with their own licenses. Their
+binaries are not included in this repository or distributed mod packages.
+
+Technical references studied during development:
+https://github.com/eai04191/SulfurRecipeBook
+https://github.com/BepInEx/BepInEx
+No source from SulfurRecipeBook was copied into this mod.

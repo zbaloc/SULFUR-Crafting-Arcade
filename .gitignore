@@ -1,0 +1,13 @@
+# Game libraries, dependency binaries, build output, and personal configuration stay local.
+BepInEx/
+bin/
+obj/
+*.dll
+*.pdb
+*.cfg
+LocalPaths.props
+GamePath.props
+work/
+*.log
+*.zip
+.vs/
