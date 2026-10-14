@@ -1,8 +1,8 @@
 # SULFUR Crafting Arcade
 
-**By zbaloc · Version 1.0.0 · GPL-3.0**
+**By zbaloc · Version 1.0.3 · GPL-3.0**
 
-A recipe helper that lives inside SULFUR's church. Buy the **Crafting Arcade**
+A recipe helper that lives inside SULFUR's church. Buy the **Crafting Oracle**
 from Arthur for **10 stamps**, then use the arcade cabinet beyond the left front
 pew to see what you can make from your backpack and accessible church chests.
 
@@ -40,6 +40,7 @@ Fresh installs show learned recipes by default. SULFUR artwork belongs to its re
 - Sorts by healing amount, healing speed, craftable output quantity, ingredient units, or name.
 - Restricts recipes to those learned by the active save by default, with an optional reveal-all setting.
 - Uses the installed game's materials, fonts and artwork at runtime, with an original arcade cabinet model.
+- Arthur's Crafting Oracle listing shows a cabinet thumbnail instead of the generic shopping cart.
 
 This is a recipe viewer. Craft items at SULFUR's existing crafting stations.
 
@@ -64,7 +65,7 @@ and launch the modded game. BepInExPack should be installed automatically.
 2. Install [BepInEx 5 x64](https://github.com/BepInEx/BepInEx/releases/tag/v5.4.23.3) into the game folder and run the game once.
 3. Extract the mod's ZIP into the SULFUR game folder, merging the `BepInEx` folders.
 4. Confirm the DLL is at `BepInEx/plugins/SulfurCraftingArcade/SulfurCraftingArcade.dll`.
-5. Launch, load a save, and buy **CRAFTING ARCADE** in Arthur's stamp upgrade menu.
+5. Launch, load a save, and buy **Crafting Oracle** in Arthur's stamp upgrade menu.
 6. Approach the cabinet and use the normal interact control when **Browse recipes** appears.
 
 To update, close the game and replace the old mod DLL. Keep only one copy of the plugin.

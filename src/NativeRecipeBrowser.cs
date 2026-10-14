@@ -35,7 +35,9 @@ namespace SulfurCraftingArcade
         RecipeSort sort=RecipeSort.Name;
         GameObject choicesPopup;
         string choicesOwner;
-        const float ViewHeight=520f;
+        float layoutWidth=1440f,layoutHeight=900f;
+        float ListWidth=>layoutWidth-132f;
+        float ViewHeight=>layoutHeight-380f;
         ushort? selection;
         Image selectedBorder;
         readonly Dictionary<Sprite,Sprite> slices=new Dictionary<Sprite,Sprite>();
@@ -62,6 +64,8 @@ namespace SulfurCraftingArcade
                 var canvas=root.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=500;
                 var scaler=root.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;
                 scaler.referenceResolution=new Vector2(1440,900);scaler.matchWidthOrHeight=0.5f;
+                // Keep the reference layout readable while exposing the extra width/height.
+                scaler.screenMatchMode=CanvasScaler.ScreenMatchMode.Expand;
                 var browser=root.AddComponent<NativeRecipeBrowser>();browser.close=close;
                 browser.font=label.font;browser.fontMaterial=new Material(label.fontSharedMaterial);
                 if(browser.fontMaterial.HasProperty("_FaceColor"))browser.fontMaterial.SetColor("_FaceColor",Color.white);
@@ -83,43 +87,58 @@ namespace SulfurCraftingArcade
         void Build()
         {
             var root=(RectTransform)transform;
-            ImageAt(root,"Backdrop",0,0,1440,900,null,new Color(0.015f,0.02f,0.015f,0.87f));
-            Text(root,"RECIPE ORACLE",48,30,1070,48,34,accent);
-            Button(root,"CLOSE [ESC]",1210,32,180,43,close);
-            var searchArea=Slot(root,"Search recipes",48,94,630,44,false);
+            Canvas.ForceUpdateCanvases();
+            layoutWidth=Math.Max(1440f,root.rect.width);layoutHeight=Math.Max(900f,root.rect.height);
+            float leftWidth=(layoutWidth-180f)/2f,rightX=48f+leftWidth+36f,rightWidth=layoutWidth-49f-rightX;
+            var backdrop=ImageAt(root,"Backdrop",0,0,layoutWidth,layoutHeight,null,new Color(0.015f,0.02f,0.015f,0.87f));
+            backdrop.anchorMin=Vector2.zero;backdrop.anchorMax=Vector2.one;backdrop.offsetMin=backdrop.offsetMax=Vector2.zero;
+            Text(root,"RECIPE ORACLE",48,30,layoutWidth-370f,48,34,accent);
+            Button(root,"CLOSE [ESC]",layoutWidth-230f,32,180,43,close);
+            var searchArea=Slot(root,"Search recipes",48,94,leftWidth,44,false);
             var input=searchArea.gameObject.AddComponent<TMP_InputField>();
-            var value=Text(searchArea,"",12,5,602,34,21,textColor);
-            var placeholder=Text(searchArea,"Search recipes or ingredients…",12,5,602,34,21,new Color(textColor.r,textColor.g,textColor.b,0.55f));
+            var value=Text(searchArea,"",12,5,leftWidth-28f,34,21,textColor);
+            var placeholder=Text(searchArea,"Search recipes or ingredients…",12,5,leftWidth-28f,34,21,new Color(textColor.r,textColor.g,textColor.b,0.55f));
             input.textViewport=searchArea;input.textComponent=value;input.placeholder=placeholder;
+            input.text=search;
             input.onValueChanged.AddListener(s=>{search=s;Render(true);});
-            var option=Rect("Show uncraftable recipes",root,714,94,620,44);
+            var option=Rect("Show uncraftable recipes",root,rightX,94,rightWidth,44);
             option.gameObject.AddComponent<Image>().color=Color.clear;
             var toggle=option.gameObject.AddComponent<Toggle>();
             var box=Slot(option,"Checkbox",0,6,32,32,false);
             var check=Text(box,"X",3,1,26,30,24,accent);check.alignment=TextAlignmentOptions.Center;
-            toggle.targetGraphic=box.GetComponent<Image>();toggle.graphic=check;toggle.isOn=false;
-            check.enabled=false;
-            Text(option,"Show uncraftable recipes",46,2,567,40,22,textColor);
+            toggle.targetGraphic=box.GetComponent<Image>();toggle.graphic=check;toggle.isOn=showUncraftable;
+            check.enabled=showUncraftable;
+            Text(option,"Show uncraftable recipes",46,2,rightWidth-53f,40,22,textColor);
             toggle.onValueChanged.AddListener(value=>{check.enabled=value;showUncraftable=value;Render(true);});
-            Choice(root,"FILTER",48,153,630,new[]{"All items","Healing items","Other (non-HP) effects","Consumables","Equipment","Enchantments / oils","Attachments","Other items"},0,index=>{filter=(RecipeFilter)index;Render(true);});
-            Choice(root,"SORT",714,153,677,new[]{"Name (A-Z)","Highest HP gain","Lowest HP gain","Fastest healing","Slowest healing","Most craftable items","Fewest craftable items","Most ingredient units","Fewest ingredient units"},0,index=>{sort=(RecipeSort)index;Render(true);});
+            Choice(root,"FILTER",48,153,leftWidth,new[]{"All items","Healing items","Other (non-HP) effects","Consumables","Equipment","Enchantments / oils","Attachments","Other items"},(int)filter,index=>{filter=(RecipeFilter)index;Render(true);});
+            Choice(root,"SORT",rightX,153,rightWidth,new[]{"Name (A-Z)","Highest HP gain","Lowest HP gain","Fastest healing","Slowest healing","Most craftable items","Fewest craftable items","Most ingredient units","Fewest ingredient units"},(int)sort,index=>{sort=(RecipeSort)index;Render(true);});
             Text(root,"CRAFTABLE ITEM",65,211,370,30,18,accent);
-            Text(root,"EXPAND AN ITEM TO VIEW ITS RECIPES",455,211,900,30,18,accent);
-            var viewport=Rect("Recipe viewport",root,48,246,1308,ViewHeight);
+            Text(root,"EXPAND AN ITEM TO VIEW ITS RECIPES",455,211,layoutWidth-540f,30,18,accent);
+            var viewport=Rect("Recipe viewport",root,48,246,ListWidth,ViewHeight);
             viewport.gameObject.AddComponent<Image>().color=Color.clear;
             viewport.gameObject.AddComponent<RectMask2D>();
             scroll=viewport.gameObject.AddComponent<ScrollRect>();scroll.viewport=viewport;
             scroll.horizontal=false;scroll.vertical=true;scroll.scrollSensitivity=45;scroll.movementType=ScrollRect.MovementType.Clamped;
-            content=Rect("Long native inventory slots",viewport,0,0,1308,ViewHeight);scroll.content=content;
-            var track=ImageAt(root,"Recipe scrollbar",1371,246,20,ViewHeight,scrollTrackStyle,new Color(0.09f,0.10f,0.075f,1));
+            content=Rect("Long native inventory slots",viewport,0,0,ListWidth,ViewHeight);scroll.content=content;
+            var track=ImageAt(root,"Recipe scrollbar",layoutWidth-69f,246,20,ViewHeight,scrollTrackStyle,new Color(0.09f,0.10f,0.075f,1));
             var slider=track.gameObject.AddComponent<Scrollbar>();slider.direction=Scrollbar.Direction.BottomToTop;
             var sliding=Rect("Sliding area",track,2,2,16,ViewHeight-4);
             var handle=ImageAt(sliding,"Native scrollbar handle",0,0,16,100,scrollHandleStyle,accent);
             handle.anchorMin=Vector2.zero;handle.anchorMax=Vector2.one;handle.offsetMin=handle.offsetMax=Vector2.zero;
             slider.handleRect=handle;slider.targetGraphic=handle.GetComponent<Image>();slider.numberOfSteps=0;
             scroll.verticalScrollbar=slider;scroll.verticalScrollbarVisibility=ScrollRect.ScrollbarVisibility.Permanent;
-            summary=Text(root,"Reading church storage…",48,783,1343,28,18,accent);
-            footer=Text(root,"Select a recipe for ingredient locations. Craft using the game's crafting station.",48,822,1343,52,19,textColor);
+            summary=Text(root,"Reading church storage…",48,layoutHeight-117f,layoutWidth-97f,28,18,accent);
+            footer=Text(root,"Select a recipe for ingredient locations. Craft using the game's crafting station.",48,layoutHeight-78f,layoutWidth-97f,52,19,textColor);
+        }
+        void Update()
+        {
+            if(!content)return;
+            var bounds=((RectTransform)transform).rect;
+            if(Math.Abs(Math.Max(1440f,bounds.width)-layoutWidth)<1f && Math.Abs(Math.Max(900f,bounds.height)-layoutHeight)<1f)return;
+            string status=summary.text;float offset=content.anchoredPosition.y;
+            foreach(Transform child in transform){child.gameObject.SetActive(false);Object.Destroy(child.gameObject);}
+            choicesPopup=null;selectedBorder=null;groups.Clear();
+            Build();summary.text=status;Render(false);Reflow(offset);
         }
         public void SetData(List<Match> recipes,IReadOnlyDictionary<ushort,int> counts,Dictionary<ushort,List<string>> sources,IReadOnlyDictionary<ushort,Sprite> icons,string status)
         {
@@ -144,8 +163,8 @@ namespace SulfurCraftingArcade
             groups.Clear();var visible=matches.Where(Visible).ToList();
             foreach(var data in OutputRecipeGroup.Build(visible,sort))
             {
-                var view=new GroupView {Data=data,Root=Rect("Output group "+data.OutputId,content,0,0,1308,64),Height=64};
-                var header=Slot(view.Root,"Expand "+data.Name,0,0,1308,64,false);
+                var view=new GroupView {Data=data,Root=Rect("Output group "+data.OutputId,content,0,0,ListWidth,64),Height=64};
+                var header=Slot(view.Root,"Expand "+data.Name,0,0,ListWidth,64,false);
                 var opacity=header.gameObject.AddComponent<CanvasGroup>();opacity.alpha=data.Recipes.Any(m=>m.Batches>0) ? 1f : 0.54f;
                 view.Arrow=Text(header,"+",16,14,28,36,28,accent);
                 Icon(header,data.OutputId,57,8,48);
@@ -153,12 +172,12 @@ namespace SulfurCraftingArcade
                 Text(header,data.Name,122,item.HealingHp>0 ? 5 : 12,600,item.HealingHp>0 ? 31 : 40,25,textColor);
                 if(item.HealingHp>0)Text(header,HealingLabel(item),122,35,630,22,17,accent);
                 int ready=data.Recipes.Count(m=>m.Batches>0);
-                Text(header,ready+" craftable  •  "+data.Recipes.Count+" recipe(s)",815,15,469,34,19,accent);
+                Text(header,ready+" craftable  •  "+data.Recipes.Count+" recipe(s)",ListWidth-493f,15,469,34,19,accent);
                 var click=header.gameObject.AddComponent<Button>();click.targetGraphic=header.GetComponent<Image>();click.transition=Selectable.Transition.None;
                 click.onClick.AddListener(()=>ToggleGroup(view));groups.Add(view);
                 if(expanded.Contains(data.OutputId))CreateDetails(view);
             }
-            if(visible.Count==0)Text(content,showUncraftable ? "No recipes match your search." : "No craftable recipes. Check Show uncraftable recipes to see what is missing.",18,20,1240,50,23,textColor);
+            if(visible.Count==0)Text(content,showUncraftable ? "No recipes match your search." : "No craftable recipes. Check Show uncraftable recipes to see what is missing.",18,20,ListWidth-68f,50,23,textColor);
             Reflow(resetScroll ? 0f : previous);
             UpdateFooter();
         }
@@ -176,13 +195,13 @@ namespace SulfurCraftingArcade
         void CreateDetails(GroupView view)
         {
             view.Arrow.text="-";
-            view.Details=Rect("Recipes loaded on expansion",view.Root,0,72,1308,1);
+            view.Details=Rect("Recipes loaded on expansion",view.Root,0,72,ListWidth,1);
             float y=0;
             foreach(var match in view.Data.Recipes)
             {
                 var m=match;int ingredientRows=Math.Max(1,(m.Required.Count+3)/4);
                 float height=Math.Max(106,ingredientRows*65+18);
-                var row=Slot(view.Details,"Recipe "+m.Recipe.Id,0,y,1308,height,selection==m.Recipe.Id);
+                var row=Slot(view.Details,"Recipe "+m.Recipe.Id,0,y,ListWidth,height,selection==m.Recipe.Id);
                 var rowBorder=row.GetComponentsInChildren<Image>().First(i=>i.name=="Native slot border");
                 if(selection==m.Recipe.Id)selectedBorder=rowBorder;
                 var group=row.gameObject.AddComponent<CanvasGroup>();group.alpha=m.Batches>0 ? 1f : 0.54f;group.interactable=true;group.blocksRaycasts=true;
@@ -199,24 +218,25 @@ namespace SulfurCraftingArcade
                 foreach(var required in m.Required)
                 {
                     int owned=0;if(stock!=null)stock.TryGetValue(required.Key,out owned);
-                    float x=412+(index%4)*220;float iy=10+(index/4)*65;
-                    var cell=Slot(row,"Ingredient "+required.Key,x,iy,214,59,false);
+                    float pitch=(ListWidth-428f)/4f;
+                    float x=412+(index%4)*pitch;float iy=10+(index/4)*65;
+                    var cell=Slot(row,"Ingredient "+required.Key,x,iy,pitch-6f,59,false);
                     Icon(cell,required.Key,5,7,43);
                     string name=m.Recipe.Ingredients.First(i=>i.Id==required.Key).Name;
-                    Text(cell,name,55,5,152,25,17,textColor);
-                    Text(cell,owned+" / "+required.Value,55,32,152,22,17,owned>=required.Value ? accent : new Color(0.95f,0.60f,0.46f));
+                    Text(cell,name,55,5,pitch-68f,25,17,textColor);
+                    Text(cell,owned+" / "+required.Value,55,32,pitch-68f,22,17,owned>=required.Value ? accent : new Color(0.95f,0.60f,0.46f));
                     index++;
                 }
                 y+=height+10;
             }
-            view.Details.sizeDelta=new Vector2(1308,y);view.Height=72+y;
+            view.Details.sizeDelta=new Vector2(ListWidth,y);view.Height=72+y;
         }
         void Reflow(float scrollOffset)
         {
             float y=0;
             foreach(var view in groups)
-            {view.Root.anchoredPosition=new Vector2(0,-y);view.Root.sizeDelta=new Vector2(1308,view.Height);y+=view.Height+10;}
-            content.sizeDelta=new Vector2(1308,Math.Max(ViewHeight,y));
+            {view.Root.anchoredPosition=new Vector2(0,-y);view.Root.sizeDelta=new Vector2(ListWidth,view.Height);y+=view.Height+10;}
+            content.sizeDelta=new Vector2(ListWidth,Math.Max(ViewHeight,y));
             Canvas.ForceUpdateCanvases();
             float range=Math.Max(0,y-ViewHeight);
             scroll.verticalNormalizedPosition=range>0 ? 1f-Mathf.Clamp(scrollOffset,0,range)/range : 1f;
@@ -301,7 +321,7 @@ namespace SulfurCraftingArcade
                 if(choicesPopup){Object.Destroy(choicesPopup);choicesPopup=null;}
                 if(same)return;
                 choicesOwner=title;
-                var popup=Rect(title+" dropdown overlay",(RectTransform)transform,0,0,1440,900);choicesPopup=popup.gameObject;
+                var popup=Rect(title+" dropdown overlay",(RectTransform)transform,0,0,layoutWidth,layoutHeight);choicesPopup=popup.gameObject;
                 var blocker=popup.gameObject.AddComponent<Image>();blocker.color=Color.clear;
                 var dismiss=popup.gameObject.AddComponent<Button>();dismiss.transition=Selectable.Transition.None;
                 dismiss.onClick.AddListener(()=>{Object.Destroy(choicesPopup);choicesPopup=null;});

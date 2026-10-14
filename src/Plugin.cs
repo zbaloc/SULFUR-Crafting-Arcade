@@ -19,11 +19,13 @@ using Object = UnityEngine.Object;
 
 namespace SulfurCraftingArcade
 {
-    [BepInPlugin("blake.sulfur.craftingarcade", "Crafting Arcade", "1.0.0")]
+    [BepInPlugin("blake.sulfur.craftingarcade", "Crafting Arcade", "1.0.3")]
     public sealed class Plugin : BaseUnityPlugin
     {
         internal static Plugin Instance;
         internal ItemDefinition PurchaseItem;
+        Texture2D purchaseArtworkTexture;
+        Sprite purchaseArtwork;
         internal ConfigEntry<int> Price;
         ConfigEntry<Vector3> Offset;
         ConfigEntry<float> Yaw;
@@ -63,7 +65,7 @@ namespace SulfurCraftingArcade
             OnlyUnlockedRecipes = Config.Bind("Recipes", "OnlyUnlockedRecipes", true, "Only show recipes learned by the active save. False reveals all recipes for testing. The uncraftable checkbox never overrides this restriction.");
             harmony = new Harmony("blake.sulfur.craftingarcade");
             harmony.PatchAll(typeof(Plugin).Assembly);
-            Logger.LogInfo("Crafting Arcade 1.0.0 by zbaloc loaded.");
+            Logger.LogInfo("Crafting Arcade 1.0.3 by zbaloc loaded.");
         }
 
         void Update()
@@ -105,12 +107,12 @@ namespace SulfurCraftingArcade
             {
                 PurchaseItem = ScriptableObject.CreateInstance<ItemDefinition>();
                 PurchaseItem.name = "CraftingArcadePurchase";
-                PurchaseItem.displayName = "CRAFTING ARCADE";
+                PurchaseItem.displayName = "Crafting Oracle";
                 PurchaseItem.description = "A recipe oracle for your backpack and church chests.";
                 PurchaseItem.flavor = "INSERT FAITH. RECEIVE DINNER.";
                 PurchaseItem.excludeFromLocalization = true;
                 PurchaseItem.basePrice = Math.Max(0, Price.Value);
-                PurchaseItem.artwork = AccessTools.Field(typeof(StampPurchaseStation), "purchaseIcon").GetValue(vendor) as Sprite;
+                PurchaseItem.artwork = LoadPurchaseArtwork();
                 PurchaseItem.inventorySize = new Vector2Int(1, 1);
                 PurchaseItem.stackSize = 1;
                 PurchaseItem.includedInDemo = true;
@@ -122,6 +124,33 @@ namespace SulfurCraftingArcade
             {
                 Offers(vendor).Add(PurchaseItem);
                 Logger.LogInfo("Added Crafting Arcade offer to " + vendor.name);
+            }
+        }
+
+        Sprite LoadPurchaseArtwork()
+        {
+            if(purchaseArtwork)return purchaseArtwork;
+            using(var source=typeof(Plugin).Assembly.GetManifestResourceStream("SulfurCraftingArcade.CraftingOracle.png"))
+            {
+                if(source==null)throw new InvalidOperationException("Crafting Oracle purchase artwork is missing from the mod.");
+                var bytes=new byte[checked((int)source.Length)];int offset=0;
+                while(offset<bytes.Length)
+                {
+                    int count=source.Read(bytes,offset,bytes.Length-offset);
+                    if(count==0)throw new System.IO.EndOfStreamException("Incomplete Crafting Oracle artwork.");
+                    offset+=count;
+                }
+                purchaseArtworkTexture=new Texture2D(2,2,TextureFormat.RGBA32,false);
+                purchaseArtworkTexture.name="Crafting Oracle purchase thumbnail";
+                purchaseArtworkTexture.filterMode=FilterMode.Bilinear;
+                purchaseArtworkTexture.wrapMode=TextureWrapMode.Clamp;
+                if(!ImageConversion.LoadImage(purchaseArtworkTexture,bytes,true))
+                {Object.Destroy(purchaseArtworkTexture);purchaseArtworkTexture=null;throw new InvalidOperationException("Could not decode Crafting Oracle artwork.");}
+                // Frame the complete cabinet, trimming unused transparent space and extraction specks.
+                float width=purchaseArtworkTexture.width,height=purchaseArtworkTexture.height;
+                purchaseArtwork=Sprite.Create(purchaseArtworkTexture,new Rect(width*0.25f,height*0.06875f,width*0.4765625f,height*0.8828125f),new Vector2(0.5f,0.5f),100f,0,SpriteMeshType.FullRect);
+                purchaseArtwork.name="Crafting Oracle";
+                return purchaseArtwork;
             }
         }
 
@@ -333,6 +362,8 @@ namespace SulfurCraftingArcade
             if (cabinet) Object.Destroy(cabinet);
             if (browser) Object.Destroy(browser.gameObject);
             if (PurchaseItem) Object.Destroy(PurchaseItem);
+            if (purchaseArtwork) Object.Destroy(purchaseArtwork);
+            if (purchaseArtworkTexture) Object.Destroy(purchaseArtworkTexture);
             harmony?.UnpatchSelf();
             Instance = null;
         }
@@ -352,6 +383,29 @@ namespace SulfurCraftingArcade
         }
         // true tells the native manager to permanently consume/remove the interactable.
         public override bool OnInteract(Player player) { if(Plugin.Instance!=null)Plugin.Instance.Open(); return false; }
+    }
+
+    [HarmonyPatch(typeof(StampPurchaseListItem), "UpdateDisplay")]
+    static class OraclePurchaseDisplayPatch
+    {
+        static void Postfix(StampPurchaseListItem __instance)
+        {
+            var plugin=Plugin.Instance;
+            if(plugin==null || __instance.Item!=plugin.PurchaseItem)return;
+            var label=AccessTools.Field(typeof(StampPurchaseListItem),"label").GetValue(__instance) as TMPro.TextMeshProUGUI;
+            if(label)
+            {
+                label.text="Crafting Oracle";
+                label.fontStyle &= ~(TMPro.FontStyles.UpperCase | TMPro.FontStyles.LowerCase | TMPro.FontStyles.SmallCaps);
+            }
+            var picture=AccessTools.Field(typeof(StampPurchaseListItem),"itemImage").GetValue(__instance) as UnityEngine.UI.Image;
+            if(picture)
+            {
+                picture.sprite=plugin.PurchaseItem.artwork;picture.preserveAspect=true;
+                // The row keeps the game's purchased checkmark/opacity; also mute the cabinet picture.
+                picture.color=plugin.Purchased ? new Color(0.75f,0.75f,0.75f,1f) : Color.white;
+            }
+        }
     }
 
     [HarmonyPatch(typeof(StampPurchaseStation), "IsPurchased")]

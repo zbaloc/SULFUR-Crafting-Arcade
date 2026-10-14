@@ -10,6 +10,8 @@ source assets are not included in this repository or distributed mod packages.
 The in-game screenshots in docs/images show the mod running in SULFUR and include
 game artwork belonging to its respective owners. The mod's GPL license does not
 relicense the game's artwork.
+The purchase thumbnail in assets/crafting-oracle.png is derived from an in-game
+screenshot of the original mod cabinet and is embedded in the plugin DLL.
 
 BepInEx and Harmony are external dependencies with their own licenses. Their
 binaries are not included in this repository or distributed mod packages.

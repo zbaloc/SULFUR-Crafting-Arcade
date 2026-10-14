@@ -23,7 +23,13 @@ $compilation = [Microsoft.CodeAnalysis.CSharp.CSharpCompilation]::Create('Sulfur
 $out = Join-Path $PSScriptRoot 'BepInEx\plugins\SulfurCraftingArcade'
 New-Item -ItemType Directory -Path $out -Force | Out-Null
 $stream = [IO.File]::Create((Join-Path $out 'SulfurCraftingArcade.dll'))
-try { $result = $compilation.Emit($stream) } finally { $stream.Dispose() }
+$artPath = Join-Path $PSScriptRoot 'assets\crafting-oracle.png'
+if (!(Test-Path -LiteralPath $artPath)) { $stream.Dispose(); throw 'Crafting Oracle purchase artwork is missing.' }
+$artBytes = [IO.File]::ReadAllBytes($artPath)
+$artProvider = [Func[IO.Stream]] { [IO.MemoryStream]::new($artBytes, $false) }.GetNewClosure()
+$resources = [Collections.Generic.List[Microsoft.CodeAnalysis.ResourceDescription]]::new()
+$resources.Add([Microsoft.CodeAnalysis.ResourceDescription]::new('SulfurCraftingArcade.CraftingOracle.png', $artProvider, $true))
+try { $result = $compilation.Emit($stream, $null, $null, $null, $resources) } finally { $stream.Dispose() }
 $result.Diagnostics | Where-Object Severity -eq Error | ForEach-Object ToString
 if (!$result.Success) { throw 'Compilation failed.' }
 Write-Output "Built $out\SulfurCraftingArcade.dll"
